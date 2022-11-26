@@ -112,7 +112,7 @@
         <script>
             async function sign_up()
             {
-                const request = await window.fetch("https://" + window.location.hostname + "/sign_up",
+                const request = await window.fetch(window.location.protocol + "//" + window.location.hostname + "/sign_up",
                 {
                     method: "POST",
                     body: new FormData(document.getElementById("form"))
@@ -133,7 +133,7 @@
 
             async function sign_in()
             {
-                const request = await window.fetch("https://" + window.location.hostname + "/sign_in",
+                const request = await window.fetch(window.location.protocol + "//" + window.location.hostname + "/sign_in",
                 {
                     method: "POST",
                     body: new FormData(document.getElementById("form"))

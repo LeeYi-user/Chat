@@ -100,7 +100,8 @@
             {
                 const connect = () => new Promise((res, rej) =>
                 {
-                    const socket = new WebSocket("wss://" + window.location.hostname + "/wss");
+                    const protocol = (window.location.protocol == "http:") ? "ws:" : "wss:";
+                    const socket = new WebSocket(protocol + "//" + window.location.hostname + "/wss");
 
                     socket.addEventListener("open", () => res(socket));
                     socket.addEventListener("error", () => res(connect()));
