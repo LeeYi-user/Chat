@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <style>
+            .top
+            {
+                text-align: center;
+                margin-top: 100px;
+                font-size: 210%;
+                font-family: Consolas, "courier new";
+            }
+
+            .center
+            {
+                width: 900px;
+                margin-top: 100px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .enter
+            {
+                text-align: center;
+            }
+
+            .tip
+            {
+                display: inline;
+                font-size: 105%;
+                margin-top: 8px;
+                font-family: Consolas, "courier new";
+            }
+
+            .box
+            {
+                width: 300px;
+                height: 30px;
+                font-size: 105%;
+                padding-left: 5px;
+                border: 1px solid black;
+                font-family: Consolas, "courier new";
+            }
+
+            .box:focus
+            {
+                outline: none !important;
+            }
+
+            .bottom
+            {
+                margin-top: 100px;
+            }
+
+            .btn
+            {
+                width: auto;
+                border: 1px solid black;
+                color: black;
+                padding: 10px 20px;
+                cursor: pointer;
+                background-color: white;
+                font-size: 105%;
+                font-family: Consolas, "courier new";
+            }
+
+            .btn:hover
+            {
+                color: white;
+                background: black;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="top">
+            Welcome
+        </div>
+
+        <form class="center" id="form">
+            <div class="enter">
+                <div class="tip">
+                    Username:
+                </div>
+
+                <input type="user" class="box" name="username" maxlength="16">
+            </div>
+
+            <div class="enter" style="margin-top: 50px;">
+                <div class="tip">
+                    Password:
+                </div>
+
+                <input type="password" class="box" name="password" maxlength="32">
+            </div>
+        </form>
+
+        <div class="bottom">
+            <div class="enter">
+                <button class="btn" onclick="sign_up()">
+                    Sign Up
+                </button>
+
+                <button class="btn" style="margin-left: 50px;" onclick="sign_in()">
+                    Sign In
+                </button>
+            </div>
+        </div>
+
+        <script>
+            async function sign_up()
+            {
+                const request = await window.fetch("https://" + window.location.hostname + "/sign_up",
+                {
+                    method: "POST",
+                    body: new FormData(document.getElementById("form"))
+                });
+
+                request.text().then((responseText) =>
+                {
+                    if (responseText == "sign up fail")
+                    {
+                        alert("This username already exists!");
+                    }
+                    else if (responseText == "sign up success")
+                    {
+                        alert("Sign up successfully!");
+                    }
+                });
+            }
+
+            async function sign_in()
+            {
+                const request = await window.fetch("https://" + window.location.hostname + "/sign_in",
+                {
+                    method: "POST",
+                    body: new FormData(document.getElementById("form"))
+                });
+
+                request.text().then((responseText) =>
+                {
+                    if (responseText == "sign in fail")
+                    {
+                        alert("Wrong username or password!");
+                    }
+                    else if (responseText == "sign in success")
+                    {
+                        window.location.replace("/public/home.html");
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <style>
+            .top
+            {
+                text-align: center;
+                margin-top: 100px;
+                font-size: 210%;
+                font-family: Consolas, "courier new";
+            }
+
+            .center
+            {
+                height: 450px;
+                width: 900px;
+                border: 1px solid black;
+                margin-top: 50px;
+                margin-left: auto;
+                margin-right: auto;
+                overflow: auto;
+                word-wrap: break-word;
+            }
+
+            .chat
+            {
+                margin-top: 10px;
+                margin-left: 10px;
+                font-size: 105%;
+                font-family: Consolas, "courier new";
+                font-weight: normal;
+            }
+
+            .bottom
+            {
+                width: 900px;
+                margin-top: 25px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .enter
+            {
+                text-align: center;
+            }
+
+            .tip
+            {
+                display: inline;
+                font-size: 105%;
+                margin-top: 8px;
+                font-family: Consolas, "courier new";
+            }
+
+            .box
+            {
+                width: 800px;
+                height: 30px;
+                font-size: 105%;
+                padding-left: 5px;
+                border: 1px solid black;
+                font-family: Consolas, "courier new";
+            }
+
+            .box:focus
+            {
+                outline: none !important;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="top">
+            Chatroom
+        </div>
+
+        <div class="center" id="center">
+            <div class="chat" id="chat">
+
+            </div>
+        </div>
+
+        <div class="bottom">
+            <div class="enter">
+                <div class="tip" id="tip">
+                    Message:
+                </div>
+
+                <input type="text" class="box" id="box" maxlength="256">
+            </div>
+        </div>
+
+        <script>
+            let load = 0, msgs = [], count = 0;
+
+            function main()
+            {
+                const connect = () => new Promise((res, rej) =>
+                {
+                    const socket = new WebSocket("wss://" + window.location.hostname + "/wss");
+
+                    socket.addEventListener("open", () => res(socket));
+                    socket.addEventListener("error", () => res(connect()));
+                });
+
+                connect().then((socket) =>
+                {
+                    socket.onmessage = (event) =>
+                    {
+                        const data = JSON.parse(event.data);
+
+                        for (const key in data)
+                        {
+                            if (key == "command")
+                            {
+                                if (data[key] == "get out")
+                                {
+                                    alert("You need to sign in first!");
+                                    window.location.replace("/public/");
+                                }
+                                else if (data[key] == "get in")
+                                {
+                                    if (load == 0)
+                                    {
+                                        socket.send(JSON.stringify({ "history": 100 }));
+                                    }
+                                    else
+                                    {
+                                        socket.send(JSON.stringify({ "history": 0 }));
+                                    }
+                                }
+                            }
+                            else if (key == "message")
+                            {
+                                document.getElementById("chat").innerHTML += "<div>" + data[key] + "</div>";
+
+                                if (document.getElementById("chat").childElementCount >= 100)
+                                {
+                                    document.getElementById("chat").removeChild(document.getElementById("chat").firstChild);
+                                }
+
+                                document.getElementById("center").scrollTop = document.getElementById("center").scrollHeight;
+
+                                if (load == 1)
+                                {
+                                    count++;
+                                }
+                            }
+                            else if (key == "count")
+                            {
+                                if (load == 0)
+                                {
+                                    count = data[key];
+                                    load = 1;
+                                }
+                                else if (data[key] > count)
+                                {
+                                    socket.send(JSON.stringify({ "history": data[key] - count }));
+                                }
+                                else
+                                {
+                                    while (msgs.length > 0)
+                                    {
+                                        socket.send(JSON.stringify({ "message": msgs.shift() }));
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+                    document.getElementById("box").onkeydown = (event) =>
+                    {
+                        const ele = document.getElementById("box");
+
+                        if (event.key == "Enter" && ele.value != "")
+                        {
+                            if (socket.readyState == 1)
+                            {
+                                socket.send(JSON.stringify({ "message": ele.value }));
+                            }
+                            else
+                            {
+                                msgs.push(ele.value);
+                            }
+
+                            ele.value = null;
+                        }
+                    };
+
+                    const loop = setInterval(() =>
+                    {
+                        if (socket.readyState != 1)
+                        {
+                            main();
+                            clearInterval(loop);
+                        }
+                    }, 1000);
+                });
+            }
+
+            main();
+        </script>
+    </body>
+</html>
