@@ -100,8 +100,9 @@
             {
                 const connect = () => new Promise((res, rej) =>
                 {
-                    const protocol = (window.location.protocol == "http:") ? "ws:" : "wss:";
-                    const socket = new WebSocket(protocol + "//" + window.location.hostname + "/wss");
+                    const protocol = (location.protocol == "http:") ? "ws:" : "wss:";
+                    const port = (location.port == "") ? null : (":" + location.port);
+                    const socket = new WebSocket(protocol + "//" + location.hostname + port + "/wss");
 
                     socket.addEventListener("open", () => res(socket));
                     socket.addEventListener("error", () => res(connect()));
@@ -120,7 +121,7 @@
                                 if (data[key] == "get out")
                                 {
                                     alert("You need to sign in first!");
-                                    window.location.replace("/public/");
+                                    location.replace("/public/");
                                 }
                                 else if (data[key] == "get in")
                                 {

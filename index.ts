@@ -1,6 +1,7 @@
 import { Application, Context, Router, send} from "https://deno.land/x/oak@v11.1.0/mod.ts";
 import { MongoClient } from "https://deno.land/x/mongo@v0.29.4/mod.ts";
 import { Session, MongoStore } from "https://deno.land/x/oak_sessions@v4.0.5/mod.ts";
+import "https://deno.land/x/dotenv@v3.2.0/load.ts";
 
 interface User
 {
@@ -153,4 +154,5 @@ async function wss(ctx: Context)
 	};
 }
 
+console.log("Server running at http://localhost:8080");
 await app.listen({ port: 8080 });

@@ -110,9 +110,11 @@
         </div>
 
         <script>
+            const port = (location.port == "") ? null : (":" + location.port);
+
             async function sign_up()
             {
-                const request = await window.fetch(window.location.protocol + "//" + window.location.hostname + "/sign_up",
+                const request = await fetch(location.protocol + "//" + location.hostname + port + "/sign_up",
                 {
                     method: "POST",
                     body: new FormData(document.getElementById("form"))
@@ -133,7 +135,7 @@
 
             async function sign_in()
             {
-                const request = await window.fetch(window.location.protocol + "//" + window.location.hostname + "/sign_in",
+                const request = await fetch(location.protocol + "//" + location.hostname + port + "/sign_in",
                 {
                     method: "POST",
                     body: new FormData(document.getElementById("form"))
@@ -147,7 +149,7 @@
                     }
                     else if (responseText == "sign in success")
                     {
-                        window.location.replace("/public/home.html");
+                        location.replace("/public/home.html");
                     }
                 });
             }
