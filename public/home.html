@@ -101,7 +101,7 @@
                 const connect = () => new Promise((res, rej) =>
                 {
                     const protocol = (location.protocol == "http:") ? "ws:" : "wss:";
-                    const port = (location.port == "") ? null : (":" + location.port);
+                    const port = (location.port == "") ? "" : (":" + location.port);
                     const socket = new WebSocket(protocol + "//" + location.hostname + port + "/wss");
 
                     socket.addEventListener("open", () => res(socket));
