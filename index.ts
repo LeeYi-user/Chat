@@ -14,8 +14,15 @@ interface Msg
 	"msg": string;
 }
 
+const uri = Deno.env.get("URI");
+
+if (!uri)
+{
+	throw new Error("Missing required env var URI");
+}
+
 const client = new MongoClient();
-await client.connect(Deno.env.get("URI")!);
+await client.connect(uri);
 const db = client.database("chat");
 
 const router = new Router();
@@ -88,6 +95,7 @@ async function sign_in(ctx: Context)
 }
 
 const clients = new Map<WebSocket, string>();
+const upgrades = new WeakMap<Request, Response>();
 
 async function wss(ctx: Context)
 {
@@ -96,7 +104,14 @@ async function wss(ctx: Context)
 		ctx.throw(501);
 	}
 
-	const socket = ctx.upgrade();
+	// ctx.upgrade() hands the upgrade response to a promise that app.handle()
+	// discards, so do the upgrade here and pass the response back to Deno.serve.
+	const request = (ctx.request.originalRequest as unknown as { request: Request }).request;
+	const { socket, response } = Deno.upgradeWebSocket(request);
+
+	upgrades.set(request, response);
+	ctx.respond = false;
+
 	const user = await ctx.state.session.get("user");
 
 	clients.set(socket, user);
@@ -154,5 +169,15 @@ async function wss(ctx: Context)
 	};
 }
 
-console.log("Server running at http://localhost:8080");
-await app.listen({ port: 8080 });
+const port = Number(Deno.env.get("PORT") ?? 8000);
+
+console.log(`Server running at http://localhost:${ port }`);
+
+// Deno Deploy only detects servers started with Deno.serve(), so drive oak
+// through app.handle() instead of app.listen() (which uses Deno.serveHttp).
+Deno.serve({ port, hostname: "0.0.0.0" }, async (request) =>
+{
+	const response = await app.handle(request);
+
+	return upgrades.get(request) ?? response ?? new Response(null, { status: 404 });
+});
